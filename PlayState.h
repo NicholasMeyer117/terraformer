@@ -23,6 +23,7 @@ class PlayState: public State
     std::vector<Button*> buttonList;
     std::vector<Entity*> entities;
     std::vector<Actor*> allActors;
+    std::vector<Sprite> spriteList;
     vector<vector<vector<int>>> levels;
     Actor player;
     
@@ -83,15 +84,54 @@ class PlayState: public State
     
     void createLevel(TileMap *map)
     {
-    
         
+        allActors.clear();
+        vector<vector<int>> curLevel = levels[curGame->level];
+        
+        switch (curGame->level)
+        {
+            case 0:
+            {
+                player.coords = Vector2i(6, 5);
+                allActors.push_back(&player);
+                
+                for (int i = 0; i < curLevel[0].size(); i++)
+                    for (int j = 0; j < curLevel.size(); j++)
+                    {
+                        if (curLevel[j][i] == 2)
+                        {
+                            Actor *box = new Actor;
+                            box->settings(spriteList[0], 0, 0, 51, 51);
+                            box->createActor(Actor::actorType::box, false, Vector2i(i, j));
+                            allActors.push_back(box);
+                        }
+                        if (curLevel[j][i] == 3)
+                        {
+                            Actor *redCard = new Actor;
+                            redCard->settings(spriteList[1], 0, 0, 51, 51);
+                            redCard->createActor(Actor::actorType::redCard, false, Vector2i(i, j));
+                            allActors.push_back(redCard);
+                        }
+                        if (curLevel[j][i] == 6)
+                        {
+                            Actor *redDoor = new Actor;
+                            redDoor->settings(spriteList[4], 0, 0, 51, 51);
+                            redDoor->createActor(Actor::actorType::redDoor, false, Vector2i(i, j));
+                            allActors.push_back(redDoor);
+                        }
+                    }
+
+                break;
+            }
+        }
+                 
         int mapDim = screenW/36 * levels[curGame->level].size();
-        map -> createMinimap(levels[curGame->level],mapDim,screenW/2, screenH/2, allActors);
+        map -> createMinimap(levels[curGame->level],mapDim,screenW/2, screenH/2, allActors, levels[curGame->level][0].size(), levels[curGame->level].size());
     }
     
-    /*bool updatePlayers(TileMap *map)
+    /*bool updateActors(TileMap *map)
     {
-        for (int i = 1; i < allPlayers.size(); i++)
+        for (int i = 1; i < allActors.size(); i++)
         {
             TileMap::direction dir = map->nextMove(allPlayers[i]);
             map->updateMinimap(dir, i);
@@ -123,6 +163,70 @@ class PlayState: public State
         }
         return false;
     }*/
+    bool isCollideWithActor(Actor actor1, Actor actor2)
+    {
+      
+        if (actor1.coords == actor2.coords)
+            return true;
+        return false;
+    }
+    
+    void moveActor(TileMap *map, TileMap::direction pDirection, int num)
+    {
+        
+        map->map[allActors[num]->coords.x][allActors[num]->coords.y];
+        if (pDirection == TileMap::direction::up)
+        {
+            allActors[num]->sprite.move(0, -map->TileDim);
+            allActors[num]->sprite.setRotation(0);
+            allActors[num]->coords += Vector2i(0, -1);
+        }
+        else if (pDirection == TileMap::direction::down)
+        {
+            allActors[num]->sprite.move(0, map->TileDim);
+            allActors[num]->sprite.setRotation(180);
+            allActors[num]->coords += Vector2i(0, 1);
+        }
+        else if (pDirection == TileMap::direction::left)
+        {
+            allActors[num]->sprite.move(-map->TileDim, 0);
+            allActors[num]->sprite.setRotation(270);
+            allActors[num]->coords += Vector2i(-1, 0);
+        }
+        else if (pDirection == TileMap::direction::right)
+        {
+            allActors[num]->sprite.move(map->TileDim, 0);
+            allActors[num]->sprite.setRotation(90);
+            allActors[num]->coords += Vector2i(1, 0);
+        }
+        for (int i = 1; i < allActors.size(); i++)
+        {
+            if (i != num and isCollideWithActor(*allActors[i], *allActors[num]))
+            {
+                moveActor(map, pDirection, i);
+            }
+        }
+    }
+    
+    
+    
+    /*void checkActor(Actor *person)
+    {
+        for (int i = 0; i < balls.size(); i++)
+        {
+            if (isCollideBall(person->coords, balls[i]) and balls[i].pickedUp == false and balls[i].myTeam == person->myTeam)
+            {
+                balls[i].pickedUp = true;
+                if (balls[i].myTeam)
+                    map[person->coords.y][person->coords.x] = 6;
+                else
+                    map[person->coords.y][person->coords.x] = 7;
+                person->ballList.push_back(&balls[i]);
+                person->balls++;
+                break;
+            }
+        }
+    }*/
     
     int Run(sf::RenderWindow &app)
     {
@@ -137,22 +241,41 @@ class PlayState: public State
         int enemyScore = 0;
         TileMap::direction pDirection;
         
-        ParticleSystem backParticles1(400, 20000, 10, 100, 4, Color::White, 0, screenH/8, screenH, screenW, 0);
-        ParticleSystem backParticles2(800, 20000, 10, 150, 4, Color::White, 0, screenH/8, screenH, screenW, 0, 200);
-        ParticleSystem backParticles3(400, 20000, 10, 200, 4, Color::White, 0, screenH/8, screenH, screenW, 0, 100);
-        sf::Clock clock;
+        Texture t1, t2, t3, t4, t5, t6, t7, t8;
+        t1.loadFromFile("images/box.png");
+        Sprite boxSprite(t1);
+        spriteList.push_back(boxSprite);
+        
+        t2.loadFromFile("images/redCard.png");
+        Sprite redCard(t2);
+        spriteList.push_back(redCard);
+        
+        t3.loadFromFile("images/blueCard.png");
+        Sprite blueCard(t3);
+        spriteList.push_back(blueCard);
+        
+        t4.loadFromFile("images/greenCard.png");
+        Sprite greenCard(t4);
+        spriteList.push_back(greenCard);
+        
+        t5.loadFromFile("images/redDoor.png");
+        Sprite redDoor(t5);
+        spriteList.push_back(redDoor);
+        
+        t8.loadFromFile("images/player.png");
+        Sprite playerSprite(t8);
+        spriteList.push_back(playerSprite);
         
         vector<vector<int>> level1 =
         {
             {1, 1, 1, 1, 1, 1, 1, 1, 1},
-            {1, 5, 0, 0, 0, 0, 0, 4, 1},
-            {1, 0, 1, 1, 0, 1, 1, 0, 1},
-            {1, 0, 1, 2, 0, 3, 1, 0, 1},
-            {1, 5, 0, 0, 1, 0, 0, 4, 1},
-            {1, 0, 1, 2, 0, 3, 1, 0, 1},
-            {1, 0, 1, 1, 0, 1, 1, 0, 1},
-            {1, 5, 0, 0, 0, 0, 0, 4, 1},
+            {1, 1, 3, 1, 0, 0, 0, 0, 1},
+            {1, 0, 0, 2, 0, 0, 0, 0, 1},
+            {1, 1, 1, 1, 0, 0, 0, 0, 6},
+            {1, 0, 0, 0, 0, 0, 0, 0, 1},
+            {1, 0, 0, 0, 0, 0, 0, 0, 1},
             {1, 1, 1, 1, 1, 1, 1, 1, 1},
+
 
         };
         levels.push_back(level1);
@@ -194,7 +317,8 @@ class PlayState: public State
         };
         levels.push_back(level3);
         
-        player.createActor(true, true, Vector2i(7, 4));
+        player.createActor(Actor::actorType::player, true, Vector2i(7, 4));
+        player.settings(spriteList[5], 0, 0, 45, 45);
         
         sf::Music music;
         if (!music.openFromFile("sounds/cosmoball.wav"))
@@ -223,38 +347,38 @@ class PlayState: public State
 	    //Player Movement
 	     if (Keyboard::isKeyPressed(Keyboard::W) and !waiting and !loseCondition)
 	     {
-	         if(map->checkCanMove(Vector2i(player.coords.x, player.coords.y - 1)))
+	         if(map->checkCanMove(Vector2i(player.coords.x, player.coords.y - 1), Vector2i(0, -1)))
 	         {
 	             performTurn = true;
 	             pDirection = TileMap::direction::up; 
-	             player.coords = Vector2i(player.coords.x, player.coords.y - 1);
+	             //player.coords = Vector2i(player.coords.x, player.coords.y - 1);
 	         }
 	     }   
 	     else if (Keyboard::isKeyPressed(Keyboard::S) and !waiting and !loseCondition)
 	     {
-	         if(map->checkCanMove(Vector2i(player.coords.x, player.coords.y + 1)))
+	         if(map->checkCanMove(Vector2i(player.coords.x, player.coords.y + 1), Vector2i(0, 1)))
 	         {
 	             performTurn = true;
 	             pDirection = TileMap::direction::down; 
-	             player.coords = Vector2i(player.coords.x, player.coords.y + 1);
+	             //player.coords = Vector2i(player.coords.x, player.coords.y + 1);
 	         }            
 	     }   
 	     else if (Keyboard::isKeyPressed(Keyboard::A) and !waiting and !loseCondition)
 	     {
-	         if(map->checkCanMove(Vector2i(player.coords.x - 1, player.coords.y)))
+	         if(map->checkCanMove(Vector2i(player.coords.x - 1, player.coords.y), Vector2i(-1, 0)))
 	         {
 	             performTurn = true;
 	             pDirection = TileMap::direction::left; 
-	             player.coords = Vector2i(player.coords.x - 1, player.coords.y);
+	             //player.coords = Vector2i(player.coords.x - 1, player.coords.y);
 	         }            
 	     }     
 	     else if (Keyboard::isKeyPressed(Keyboard::D) and !waiting and !loseCondition)
 	     {
-	         if(map->checkCanMove(Vector2i(player.coords.x + 1, player.coords.y)))
+	         if(map->checkCanMove(Vector2i(player.coords.x + 1, player.coords.y), Vector2i(1, 0)))
 	         {
 	             performTurn = true;
 	             pDirection = TileMap::direction::right; 
-	             player.coords = Vector2i(player.coords.x + 1, player.coords.y);
+	             //player.coords = Vector2i(player.coords.x + 1, player.coords.y);
 	         }          
 	     } 
 	     else if (Keyboard::isKeyPressed(Keyboard::Space) and !waiting and !loseCondition)
@@ -263,34 +387,20 @@ class PlayState: public State
 	         pDirection = TileMap::direction::hold;
 	     }
          
-             /*if (performTurn and !waiting and !winGame)
+             if (performTurn and !waiting and !winGame)
              {
+                 map->printMap();
                  performTurn = false;
                  waiting = true;
                  tick = 0;
                  map->playerLoc = player.coords;
-                 map->updateMinimap(pDirection, 0);
-                 if (updatePlayers(map))
+                 moveActor(map, pDirection, 0);
+                 /*if (updatePlayers(map))
                  {
                      loseCondition = true;
                      caught = true;
-                 }
-                 if (levelComplete(curGame->level))
-                 {
-                     if (curGame->blueScore < curGame->redScore and curGame->level != 2)
-                     {
-                         curGame->level++;
-                         createLevel(map);
-                     }
-                     else if (curGame->blueScore < curGame->redScore and curGame->level == 2)
-                     {
-                         winGame = true;
-                     }
-                     else
-                         loseCondition = true;
-
-                 }
-             }*/
+                 }*/
+             }
              
              if(waiting)
              {
@@ -298,21 +408,14 @@ class PlayState: public State
                  if (tick == 15)
                      waiting = false;
              }
-             
-             sf::Time elapsed = clock.restart();
-             backParticles1.update(elapsed);
-             backParticles2.update(elapsed);
-             backParticles3.update(elapsed);
-             
-            app.draw(backParticles3);
-            app.draw(backParticles2);
-            app.draw(backParticles1);
+
             
             if (!winGame)
             {
                 app.draw(map -> rectangle);
                 for(auto i:(map -> tileRectangles)) app.draw(i);
                 for(auto i:(map -> playerIcons)) app.draw(i);
+                for(auto i:allActors) app.draw(i->sprite);
             
             }
             if (loseCondition)
@@ -328,8 +431,6 @@ class PlayState: public State
         }
     
         return -1;
-    }
-
-    
+    }  
     
 };

@@ -18,12 +18,14 @@ class Actor: public Entity
     bool myTeam;
     bool isPlayer;
     enum direction {up, down, left, right, hold};
+    enum actorType {player, box, redCard, blueCard, greenCard, redDoor};
     direction dir;
+    actorType type;
     Vector2i coords;
     
-    void createActor(bool MyTeam, bool IsPlayer, Vector2i Coords)
+    void createActor(actorType Type, bool IsPlayer, Vector2i Coords)
     {
-        myTeam = MyTeam;
+        type = Type;
         isPlayer = IsPlayer;
         coords = Coords;
     }

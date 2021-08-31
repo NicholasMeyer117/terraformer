@@ -26,6 +26,7 @@ class TileMap
     //std::string tilemap;
     sf::RectangleShape rectangle;
     std::vector<CircleShape> playerIcons;
+    std::vector<Sprite*> actorIcons;
     std::vector<RectangleShape> tileRectangles;
     //vector<Ball> balls;
     enum direction {up, down, left, right, hold};
@@ -34,15 +35,15 @@ class TileMap
     Vector2i playerLoc = Vector2i(0,0); 
     
     
-    void createMinimap(vector<vector<int>> Map, float mapDim, float xPos, float yPos, vector<Actor*> players);
+    void createMinimap(vector<vector<int>> Map, float mapDim, float xPos, float yPos, vector<Actor*> players, int xTiles, int yTiles);
     
     void addTile(int xTile, int yTile, int dim, int num, int mapDim, int tilePiece, int xCoord, int yCoord);
     
     int getTileElement(Vector2i coord);
     
-    bool checkCanMove(Vector2i coord);
+    bool checkCanMove(Vector2i coord, Vector2i dif);
     
-    //bool isCollideBall(Vector2i coords, Ball ball);
+    bool isCollidePlayer(Vector2i coords, Actor actor);
     
     //bool isReturnBalls(Actor *person);
     
@@ -50,9 +51,13 @@ class TileMap
     
     void resetMap();
     
+    void printMap();
+    
     void createIcons(int mapDim, int mapX, int mapY, vector<Actor*> players);
     
     void checkActor(Actor *person);
+    
+    void moveActor(Vector2i coord, Vector2i dif);
     
     bool checkLineOfSight(Vector2i coord, Actor::direction dir);
     

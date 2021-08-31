@@ -36,29 +36,7 @@ class MenuState: public State
     
     int Run(sf::RenderWindow &app)
     {
-        /*titleText.setFont(spaceFont);
-        titleText.setString("Terraformer");
-        titleText.setCharacterSize(70);
-        titleText.setFillColor(sf::Color::White);
-        sf::FloatRect textRect = titleText.getLocalBounds();
-        titleText.setOrigin(textRect.left + textRect.width/2.0f, textRect.top  + textRect.height/2.0f);
-        titleText.setPosition(screenW/2, screenH/8);
-        
-        Button *startButton = new Button;
-        startButton->createButton(screenW/2, 350, 400, 100, &gameFont, "START", 20); 
-        buttonList.push_back(startButton);
-        
-        Button *settingsButton = new Button;
-        settingsButton->createButton(screenW/2, 500, 400, 100, &gameFont, "HOW TO PLAY", 20); 
-        buttonList.push_back(settingsButton);
-        
-        Button *creditsButton = new Button;
-        creditsButton->createButton(screenW/2, 650, 400, 100, &gameFont, "CREDITS", 20); 
-        buttonList.push_back(creditsButton);
-        
-        Button *quitButton = new Button;
-        quitButton->createButton(screenW/2, 800, 400, 100, &gameFont, "QUIT", 20); 
-        buttonList.push_back(quitButton);*/
+
         cout << to_string(screenW) + "," + to_string(screenH) + "\n";
         Texture t1;
         t1.loadFromFile("images/mainScreen.png");
